@@ -2365,15 +2365,20 @@ function butler() {
     "…전하? 오오, ${S.prince} 전하! 왕실 집사이옵니다. 하필 첫 소환이 이 늙은 뼈다귀라 송구하옵니다. 허리는… 원래 없사오니 걱정 마시옵소서."</div>`, [{ label: "…반갑다" }]);
 }
 // 새 버전 알림: 배포 주소(같은 폴더)의 version.txt가 지금 빌드와 다르면 새로고침 버튼을 띄움
-const BUILD = "20261122195207";
+const BUILD = "20261122200615";
 function checkVersion() {
   if (BUILD.startsWith("__") || location.protocol === "file:") return;
   fetch("version.txt?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(v => {
     v = v.trim(); if (!v || v === BUILD || document.getElementById("newVer")) return;
+    // 방금 이 버전으로 새로고침했는데 아직 옛 파일이 왔다면(서버 반영 지연) 3분 동안은 다시 묻지 않음
+    try { const t = (sessionStorage.getItem("necroTry") || "").split("|"); if (t[0] === v && Date.now() - +t[1] < 180000) return; } catch (e) {}
+    // 새 게임 파일이 실제로 받아지는지 먼저 확인(아직 옛 파일이면 버튼을 띄우지 않고 다음 확인 때 다시)
+    return fetch(location.pathname + "?v=" + encodeURIComponent(v), { cache: "reload" }).then(r => r.ok ? r.text() : "").then(txt => {
+    if (!txt.includes('BUILD = "' + v + '"') || document.getElementById("newVer")) return;
     const b = document.createElement("button"); b.id = "newVer"; b.textContent = "새 버전이 나왔어요 · 눌러서 새로고침";
-    b.onclick = () => { try { save(); } catch (e) {} location.replace(location.pathname + "?v=" + encodeURIComponent(v)); };   // 주소 뒤에 버전을 붙여 브라우저 캐시(옛 파일) 우회
+    b.onclick = () => { try { save(); sessionStorage.setItem("necroTry", v + "|" + Date.now()); } catch (e) {} location.replace(location.pathname + "?v=" + encodeURIComponent(v)); };   // 주소 뒤에 버전을 붙여 브라우저 캐시(옛 파일) 우회
     document.body.appendChild(b);
-  }).catch(() => {});
+  }); }).catch(() => {});
 }
 setInterval(checkVersion, 60000); setTimeout(checkVersion, 5000);
 function init() {
