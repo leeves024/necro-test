@@ -1226,8 +1226,12 @@ function load() {
     S.wk = Object.assign(base.wk, o.wk); S.hell = Object.assign(base.hell, o.hell); S.train = {}; if (o.train) for (const k in o.train) if (/^\d+$/.test(k) && typeof o.train[k] === "object") S.train[k] = o.train[k];   // 예전 효과형 수련은 초기화 S.compLv = o.compLv || {}; S.ember = o.ember || 0; S.flags = o.flags || {}; S.death = (S.death || 0) + (o.gold || 0); delete S.gold;   // 예전 금화 → 죽음
     const fix = c => { if (c && typeof c.type === "string") c.type = OLD_TYPE[c.type] ?? 0; };   // 예전 종류(해골·기사…) → 세부 단계
     S.corpses.forEach(fix); S.army.forEach(fix); S.ritual.forEach(r => fix(r.c)); fix(S.worker); (S.dungeon.party || []).forEach(fix);
+    try { localStorage.setItem(SAVE_KEY + "-bak", raw); } catch (e) {}   // 업데이트 대비: 마지막으로 잘 읽힌 세이브 사본
     return true;
-  } catch (e) { return false; }
+  } catch (e) {   // 못 읽은 세이브는 지우지 않고 따로 보관 (새 게임이 덮어쓰지 않게)
+    try { const raw = localStorage.getItem(SAVE_KEY); if (raw) localStorage.setItem(SAVE_KEY + "-broken-" + Date.now(), raw); } catch (e2) {}
+    return false;
+  }
 }
 
 /* ================== 그리기 ================== */
@@ -2275,7 +2279,7 @@ function butler() {
     "…전하? 오오, ${S.prince} 전하! 왕실 집사이옵니다. 하필 첫 소환이 이 늙은 뼈다귀라 송구하옵니다. 허리는… 원래 없사오니 걱정 마시옵소서."</div>`, [{ label: "…반갑다" }]);
 }
 // 새 버전 알림: 배포 주소(같은 폴더)의 version.txt가 지금 빌드와 다르면 새로고침 버튼을 띄움
-const BUILD = "20261122182443";
+const BUILD = "20261122183215";
 function checkVersion() {
   if (BUILD.startsWith("__") || location.protocol === "file:") return;
   fetch("version.txt?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(v => {
