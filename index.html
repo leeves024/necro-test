@@ -492,6 +492,63 @@
   /* 문 회랑: 카드 테두리·배경 없이 문만 */
   .gates .gate, .gates .gate.g-hell, .gates .gate.g-exp, .gates .gate.g-boss { background: none; border: 0; box-shadow: none; overflow: visible; }
   #newVer { position: fixed; left: 50%; top: calc(8px + env(safe-area-inset-top)); transform: translateX(-50%); z-index: 80; padding: 9px 16px; border-radius: 999px; border: 1px solid #b78cff; background: linear-gradient(180deg, #6a3fb0, #3a2066); color: #fff; font: 700 13px inherit; font-family: inherit; box-shadow: 0 4px 18px rgba(120,70,220,.55); animation: autoGlow 1.6s ease-in-out infinite; white-space: nowrap; }
+  /* ===== 승급 제단 (v2) ===== */
+  .rk2 { position: relative; padding: 14px 12px 12px; border-radius: 18px; overflow: hidden;
+    background: radial-gradient(90% 45% at 50% 22%, rgba(120,70,220,.28), transparent 70%), radial-gradient(60% 30% at 50% 100%, rgba(214,178,110,.08), transparent), linear-gradient(180deg, #181322, #0e0c13);
+    border: 1px solid rgba(180,140,255,.28); box-shadow: 0 10px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05); }
+  .rk2::before { content: ""; position: absolute; inset: 6px; border-radius: 13px; border: 1px solid rgba(214,178,110,.14); pointer-events: none; }
+  .rkHead { text-align: center; position: relative; z-index: 1; }
+  .rkKick { font-size: 11px; color: #a998c6; letter-spacing: .4px; }
+  .rkTitle { margin-top: 3px; font-size: 22px; font-weight: 800; letter-spacing: 2px; background: linear-gradient(180deg, #fff1c8, #d6a650 70%, #a77a30); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 10px rgba(214,166,80,.35)); }
+  .alt { position: relative; width: 210px; height: 210px; margin: 4px auto 2px; }
+  .altSvg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .altSvg .l1 { fill: none; stroke: #b48cff; stroke-width: 1.2; opacity: .85; }
+  .altSvg .l2 { fill: none; stroke: #8a62d8; stroke-width: .8; opacity: .8; }
+  .altSvg text { fill: #c9a8ff; font-size: 9px; text-anchor: middle; opacity: .85; }
+  .altR1 { transform-origin: 100px 100px; animation: embSpin 40s linear infinite; }
+  .altR2 { transform-origin: 100px 100px; animation: embSpin 26s linear infinite reverse; }
+  .altR3 { transform-origin: 100px 100px; animation: embSpin 14s linear infinite; }
+  .rk2.ready .altSvg .l1 { stroke: #e3c8ff; filter: drop-shadow(0 0 4px #b48cff); }
+  .rk2.ready .altR1 { animation-duration: 12s; } .rk2.ready .altR2 { animation-duration: 8s; }
+  .altU { position: absolute; left: 50%; top: 50%; width: 96px; height: 96px; transform: translate(-50%, -58%); image-rendering: pixelated; filter: drop-shadow(0 0 12px rgba(170,120,255,.75)) brightness(.9); animation: altFloat 3s ease-in-out infinite; }
+  .rk2:not(.ready) .altU { filter: drop-shadow(0 0 8px rgba(170,120,255,.5)) brightness(.25) saturate(0); }
+  @keyframes altFloat { 50% { transform: translate(-50%, -64%); } }
+  .altN { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); text-align: center; font-size: 26px; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 0 12px rgba(170,120,255,.9), 0 2px 0 #000; }
+  .altN small { display: block; font-size: 8px; letter-spacing: 3px; color: #c9a8ff; font-weight: 700; margin-bottom: 1px; }
+  .rkCnt { display: flex; align-items: center; gap: 8px; margin: 10px 2px 6px; font-size: 11px; color: #b9a3e0; letter-spacing: .6px; }
+  .rkCnt::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(180,140,255,.35), transparent); }
+  .rkCnt b { color: #e9dcff; order: 2; } .rkCnt::after { order: 1; }
+  .rqs { display: flex; flex-direction: column; gap: 5px; }
+  .rq2 { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 12px; background: linear-gradient(90deg, rgba(255,255,255,.035), rgba(255,255,255,.015)); border: 1px solid rgba(255,255,255,.06); }
+  .rqI { width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: #17131e; border: 1px solid rgba(255,255,255,.08); }
+  .rqI svg { width: 18px; height: 18px; fill: none; stroke: #7d7290; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+  .rqM { flex: 1; min-width: 0; } .rqM span { font-size: 12px; color: #d8cde6; }
+  .rqB { height: 4px; margin-top: 5px; border-radius: 3px; background: rgba(255,255,255,.07); overflow: hidden; }
+  .rqB i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, #5e3aa0, #a173f0); }
+  .rq2 > b { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rq2.ok { border-color: rgba(180,140,255,.35); background: linear-gradient(90deg, rgba(140,98,216,.16), rgba(140,98,216,.04)); }
+  .rq2.ok .rqI { background: radial-gradient(circle, #6b48b8, #3a2466); border-color: #b08cff; box-shadow: 0 0 10px rgba(170,120,255,.45); }
+  .rq2.ok .rqI svg { stroke: #fff; }
+  .rq2.ok .rqB i { background: linear-gradient(90deg, #d6a650, #fff1c8); }
+  .rq2.ok > b { color: #e9c66e; font-size: 14px; }
+  .rgs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rg { flex: 1 1 calc(33% - 6px); min-width: 88px; padding: 7px 9px; border-radius: 12px; background: rgba(214,178,110,.06); border: 1px solid rgba(214,178,110,.2); display: flex; flex-direction: column; justify-content: center; }
+  .rg.big { flex: 1 1 calc(50% - 6px); flex-direction: row; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(214,178,110,.12), rgba(120,70,220,.08)); }
+  .rgI { width: 38px; height: 38px; flex: 0 0 38px; border-radius: 10px; overflow: hidden; background: radial-gradient(circle at 50% 70%, #2a2236, #120f17); border: 1px solid rgba(214,178,110,.3); display: flex; align-items: center; justify-content: center; }
+  .rgI img { width: 50px; height: 50px; margin-top: 4px; image-rendering: pixelated; }
+  .rg small { font-size: 10px; color: var(--muted); display: block; } .rg b { font-size: 13px; color: var(--gold); }
+  .rkBtn2 { position: relative; overflow: hidden; width: 100%; margin-top: 14px; padding: 14px; font-size: 15px; letter-spacing: 2px; border-radius: 14px; border: 1px solid rgba(214,178,110,.5);
+    background: linear-gradient(180deg, #9a6ae8, #5a34a8); color: #fff; box-shadow: 0 6px 20px rgba(130,80,220,.45), inset 0 1px 0 rgba(255,255,255,.3); }
+  .rkBtn2:not(:disabled)::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -50%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent); animation: rkShine 2.2s ease-in-out infinite; }
+  @keyframes rkShine { 60%, 100% { left: 120%; } }
+  .rkBtn2:disabled { background: #1d1826; border-color: rgba(255,255,255,.08); color: #7a6f88; letter-spacing: .5px; box-shadow: none; }
+  .rkPath { display: flex; justify-content: space-between; align-items: center; margin: 14px 4px 2px; position: relative; }
+  .rkPath::before { content: ""; position: absolute; left: 8px; right: 8px; top: 50%; height: 1px; background: rgba(180,140,255,.22); }
+  .rkPath i { position: relative; width: 20px; height: 20px; border-radius: 50%; background: #15111b; border: 1px solid rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center; font-style: normal; }
+  .rkPath i b { font-size: 9px; color: #6c6476; }
+  .rkPath i.done { background: #3a2466; border-color: #8a62d8; } .rkPath i.done b { color: #d8c6ff; }
+  .rkPath i.cur { background: linear-gradient(180deg, #a173f0, #6a42b8); border-color: #e3c8ff; box-shadow: 0 0 10px rgba(170,120,255,.7); transform: scale(1.15); } .rkPath i.cur b { color: #fff; }
+  .rkPath i.next { border-color: #d6a650; border-style: dashed; } .rkPath i.next b { color: #e9c66e; }
 </style>
 </head>
 <body>
@@ -609,9 +666,9 @@ const AREAS = ["국경 야산", "버려진 마을", "기사의 들판", "교회�
 function areaOf(st) { return Math.floor((st - 1) / 10) % AREAS.length; }
 function stageInfo(st) {
   const chAll = Math.floor((st - 1) / LV_PER_CH);
-  return { act: Math.floor(chAll / CH_PER_ACT) + 1, ch: (chAll % CH_PER_ACT) + 1, lv: ((st - 1) % LV_PER_CH) + 1, name: AREAS[areaOf(st)] };
+  const act = Math.floor(chAll / CH_PER_ACT) + 1; return { act, ch: (chAll % CH_PER_ACT) + 1, lv: ((st - 1) % LV_PER_CH) + 1, lvA: st - (act - 1) * LV_PER_CH * CH_PER_ACT, name: AREAS[areaOf(st)] };
 }
-function stageLabel(st) { const i = stageInfo(st); return `${i.act}장 ${i.ch}-Lv.${i.lv}`; }
+function stageLabel(st) { const i = stageInfo(st); return `${i.act}장-Lv.${i.lvA}`; }
 const OFFLINE_CAP0 = 8 * 3600;
 function offCap() { return OFFLINE_CAP0 + tv("ledger") * 3600; }
 
@@ -1515,7 +1572,7 @@ function liveMain() {
     const si = stageInfo(S.stage), pos = si.lv;
     const cryUI = B.cry ? `<span class="mut" style="font-size:11px">수정 ${Math.max(0, Math.round(B.cry.hp / B.cry.max * 100))}%</span>` : "";
     const bossUI = !isBoss(S.stage) ? cryUI : B.boss ? `<b style="color:#ffb84d">보스전 ${Math.ceil(B.bossT)}초</b>` : `<button class="btn" data-act="boss" style="padding:3px 8px">보스 도전</button>`;
-    setHTML("banner", `<span class="name">${si.act}장 ${si.ch}-Lv.${si.lv} <span class="sub">· ${si.name}${isBoss(S.stage) ? (B.boss ? "" : " · 반복") : ""}</span></span>${bossUI}<span class="segs">${Array.from({ length: LV_PER_CH }, (_, i) => `<i class="${i === 9 || i === 19 ? "boss" : ""} ${i < pos ? "on" : ""}"></i>`).join("")}</span>`);
+    setHTML("banner", `<span class="name">${si.act}장-Lv.${si.lvA} <span class="sub">· ${si.name}${isBoss(S.stage) ? (B.boss ? "" : " · 반복") : ""}</span></span>${bossUI}<span class="segs">${Array.from({ length: LV_PER_CH }, (_, i) => `<i class="${i === 9 || i === 19 ? "boss" : ""} ${i < pos ? "on" : ""}"></i>`).join("")}</span>`);
   } else {
     setHTML("banner", `<span class="name">${TIERS[S.tier].n}</span><span class="mut" style="font-size:11px">평균 ${GRADES[clamp(Math.round(gradeMean(masteryL())), 1, 5)].n} 시체 · 묘역 ${S.tier}/${maxTier()}</span>`);
   }
@@ -1613,25 +1670,7 @@ function homeBody() {
     }
     return h;
   }
-  if (hseg === "rank") {
-    const emb = (c, big) => `<div class="emb${big ? " big" : ""}"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><circle cx="50" cy="50" r="37"/><path d="M50 8 L58 50 L50 92 L42 50Z M8 50 L50 42 L92 50 L50 58Z"/></svg><b>${c}</b></div>`;
-    if (S.cls >= 10) return `<div class="rk"><div class="rkTop">${emb(10, true)}<div><div class="rkT">사령술 10클래스</div><div class="rkN">${TITLES[10]}</div><div class="mut" style="margin-top:4px">왕가의 사령술을 모두 되찾았다.</div></div></div></div>`;
-    const r = rankReq(S.cls), c = rankCandidates(), why = canRank(), nxs = SOULS.find(x => x.cls === S.cls + 1), nxh = Object.values(HEROES).find(x => x.cls === S.cls + 1);
-    const req = (ok, label, val) => `<div class="rq ${ok ? "ok" : ""}"><i>${ok ? "✓" : ""}</i><span>${label}</span><b>${val}</b></div>`;
-    const gain = (ico, label) => `<div class="gn">${ico ? icon(ico) : `<div class="ico"><span class="gi">✦</span></div>`}<span>${label}</span></div>`;
-    return `<div class="rk">
-      <div class="rkTop">${emb(S.cls)}<div class="rkArrow">›</div>${emb(S.cls + 1, true)}<div class="rkName"><div class="rkT">다음 칭호</div><div class="rkN">${TITLES[S.cls + 1]}</div></div></div>
-      <div class="rkSec">의식 조건</div>
-      ${r.stage ? req(S.best >= r.stage, `${stageLabel(r.stage - 1)} 보스 돌파`, S.best >= r.stage ? "완료" : "미달") : ""}
-      ${req(c.length >= r.n, `${GRADES[r.g].n} 이상 시체 제물`, `${Math.min(c.length, r.n)} / ${r.n}구`)}
-      ${r.floor ? req((S.hell.max || 0) >= r.floor, `지옥 지하 ${r.floor}층 토벌`, (S.hell.max || 0) >= r.floor ? "완료" : "미달") : ""}
-      ${r.ember ? req(S.ember >= r.ember, "업화의 정수", `${Math.min(S.ember, r.ember)} / ${r.ember}`) : ""}
-      ${req(S.death >= r.death, "죽음", `${fmt(Math.min(S.death, r.death))} / ${fmt(r.death)}`)}
-      <div class="rkSec">얻는 힘</div>
-      <div class="gns">${nxs ? gain(nxs.spr, `새 혼백 <b>${nxs.n}</b>`) : ""}${nxh ? gain(nxh.spr, `영웅 해금 <b>${nxh.n}</b>`) : ""}${gain("", `통솔력 <b>${cmdMax()} → ${CMD[S.cls + 1]}</b>`)}${gain("", `보관소·군단 <b>+10</b>`)}${S.cls % 2 === 0 ? gain("", `새 묘역 <b>${TIERS[Math.min(5, maxTier() + 1)].n}</b>`) : ""}</div>
-      <button class="btn rkBtn" data-act="rank" ${why ? "disabled" : ""}>${why || "승급 의식 거행"}</button>
-    </div>`;
-  }
+  if (hseg === "rank") return rankView();
   if (hseg === "worker") {
     if (!S.worker) return `<div class="lrow"><div class="info"><b>아직 일꾼이 없어요</b><div class="mut">땅을 파헤쳐 첫 시체를 깨워보세요.</div></div></div>`;
     const mod = workerMod();
@@ -1961,6 +2000,53 @@ function soulUpModal(id) {
 function viewHero() {
   return `<div class="card"><h4>영웅</h4><div class="mut">6클래스부터 소환할 수 있는 특별한 언데드예요. 시체 40구 + 던전 재료 + 마력으로 각각 1마리씩. 통솔력을 먹지 않고, 쓰러지면 소환 해제됐다가 잠시 뒤 다시 나와요.</div></div>` + heroList();
 }
+// ===== 승급 제단 =====
+const RK_ICO = {
+  stage: '<svg viewBox="0 0 24 24"><path d="M4 20 15 9M15 9l2-5 3 3-5 2M20 20 9 9M9 9 7 4 4 7l5 2M6 15l3 3M18 15l-3 3"/></svg>',
+  corpse: '<svg viewBox="0 0 24 24"><path d="M12 3c-4.4 0-7 2.9-7 6.6 0 2.4 1.1 4 2.6 5V18h8.8v-3.4c1.5-1 2.6-2.6 2.6-5C19 5.9 16.4 3 12 3z"/><circle cx="9.3" cy="10" r="1.7"/><circle cx="14.7" cy="10" r="1.7"/><path d="M10 18v3M12 18v3M14 18v3"/></svg>',
+  hell: '<svg viewBox="0 0 24 24"><path d="M12 2c1 4 5 5.5 5 11a5 5 0 0 1-10 0c0-2.6 1.2-4 2.4-5.2.3 1.8 1 2.6 2 3C11 8 11 5 12 2z"/></svg>',
+  ember: '<svg viewBox="0 0 24 24"><path d="M12 3 19 12 12 21 5 12z"/><path d="M12 7l3.5 5L12 17l-3.5-5z"/></svg>',
+  death: '<svg viewBox="0 0 24 24"><path d="M12 2s6 7 6 12a6 6 0 0 1-12 0c0-5 6-12 6-12z"/><path d="M9.5 14.5h5M12 12v5"/></svg>',
+};
+function rankCircle(c, sprKey) {
+  const runes = "ᚱᚨᚾᛟᛗᛞᛖᚦᛉᛏᛒᛚᚷᚹᚺᛁ";
+  return `<div class="alt"><svg class="altSvg" viewBox="0 0 200 200">
+      <defs><radialGradient id="altG"><stop offset="0" stop-color="#b07cff" stop-opacity=".45"/><stop offset=".6" stop-color="#6a3fd0" stop-opacity=".12"/><stop offset="1" stop-color="#6a3fd0" stop-opacity="0"/></radialGradient></defs>
+      <circle cx="100" cy="100" r="98" fill="url(#altG)"/>
+      <g class="altR1"><circle cx="100" cy="100" r="92" class="l1"/><circle cx="100" cy="100" r="84" class="l2"/>${[...runes].map((ch, i) => `<text x="100" y="15.5" transform="rotate(${i * 22.5} 100 100)">${ch}</text>`).join("")}</g>
+      <g class="altR2"><circle cx="100" cy="100" r="70" class="l1"/><path class="l2" d="${Array.from({ length: 7 }, (_, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI * 3 / 7; return (i ? "L" : "M") + (100 + 70 * Math.cos(a)).toFixed(1) + " " + (100 + 70 * Math.sin(a)).toFixed(1); }).join("")}Z"/></g>
+      <g class="altR3"><circle cx="100" cy="100" r="46" class="l1"/>${Array.from({ length: 12 }, (_, i) => `<path class="l2" d="M100 50v6" transform="rotate(${i * 30} 100 100)"/>`).join("")}</g>
+    </svg>${sprKey ? `<img class="altU" src="${SPRITES[sprKey].src}" alt="">` : ""}<div class="altN"><small>CLASS</small>${c}</div></div>`;
+}
+function rankView() {
+  const path = `<div class="rkPath">${Array.from({ length: 10 }, (_, i) => `<i class="${i + 1 < S.cls ? "done" : i + 1 === S.cls ? "cur" : i + 1 === S.cls + 1 ? "next" : ""}"><b>${i + 1}</b></i>`).join("")}</div>`;
+  if (S.cls >= 10) return `<div class="rk2">${rankCircle(10, "u_bonedragon")}<div class="rkHead"><div class="rkKick">사령술 10클래스</div><div class="rkTitle">${TITLES[10]}</div><div class="mut">왕가의 사령술을 모두 되찾았다.</div></div>${path}</div>`;
+  const r = rankReq(S.cls), c = rankCandidates(), why = canRank(), nxs = SOULS.find(x => x.cls === S.cls + 1), nxh = Object.values(HEROES).find(x => x.cls === S.cls + 1);
+  const conds = [];
+  if (r.stage) conds.push({ ic: "stage", l: `${stageLabel(r.stage - 1)} 보스 돌파`, v: S.best >= r.stage ? "돌파" : `최고 ${stageLabel(Math.max(1, S.best))}`, p: S.best >= r.stage ? 1 : Math.min(.95, S.best / r.stage) });
+  conds.push({ ic: "corpse", l: `${GRADES[r.g].n} 이상 시체`, v: `${Math.min(c.length, r.n)} / ${r.n}`, p: Math.min(1, c.length / r.n) });
+  if (r.floor) conds.push({ ic: "hell", l: `지옥 B${r.floor} 토벌`, v: (S.hell.max || 0) >= r.floor ? "토벌" : `최고 B${S.hell.max || 0}`, p: Math.min(1, (S.hell.max || 0) / r.floor) });
+  if (r.ember) conds.push({ ic: "ember", l: "업화의 정수", v: `${Math.min(S.ember, r.ember)} / ${r.ember}`, p: Math.min(1, S.ember / r.ember) });
+  conds.push({ ic: "death", l: "죽음", v: `${fmt(Math.min(S.death, r.death))} / ${fmt(r.death)}`, p: Math.min(1, S.death / r.death) });
+  const done = conds.filter(x => x.p >= 1).length;
+  const gains = [];
+  if (nxs) gains.push(`<div class="rg big"><div class="rgI"><img src="${SPRITES[nxs.spr].src}" alt=""></div><div><small>새 혼백</small><b>${nxs.n}</b></div></div>`);
+  if (nxh) gains.push(`<div class="rg big"><div class="rgI"><img src="${SPRITES[nxh.spr].src}" alt=""></div><div><small>영웅 해금</small><b>${nxh.n}</b></div></div>`);
+  const nc = Object.keys(COMP_UNLOCK).find(k => COMP_UNLOCK[k] === S.cls + 1);
+  if (nc) gains.push(`<div class="rg big"><div class="rgI"><img src="${SPRITES[COMPANIONS[nc].spr].src}" alt=""></div><div><small>동료 합류</small><b>${COMPANIONS[nc].n}</b></div></div>`);
+  gains.push(`<div class="rg"><small>통솔력</small><b>${cmdMax()} → ${CMD[S.cls + 1]}</b></div>`, `<div class="rg"><small>보관소·군단</small><b>+10</b></div>`);
+  if (S.cls % 2 === 0) gains.push(`<div class="rg"><small>새 묘역</small><b>${TIERS[Math.min(5, maxTier() + 1)].n}</b></div>`);
+  return `<div class="rk2 ${why ? "" : "ready"}">
+    <div class="rkHead"><div class="rkKick">사령술 ${S.cls}클래스 · ${TITLES[S.cls]}</div><div class="rkTitle">${TITLES[S.cls + 1]}</div></div>
+    ${rankCircle(S.cls + 1, (nxs || nxh || {}).spr)}
+    <div class="rkCnt"><span>의식 조건</span><b>${done} / ${conds.length}</b></div>
+    <div class="rqs">${conds.map(x => `<div class="rq2 ${x.p >= 1 ? "ok" : ""}"><div class="rqI">${RK_ICO[x.ic]}</div><div class="rqM"><span>${x.l}</span><div class="rqB"><i style="width:${(x.p * 100).toFixed(0)}%"></i></div></div><b>${x.p >= 1 ? "✓" : x.v}</b></div>`).join("")}</div>
+    <div class="rkCnt"><span>얻는 힘</span></div>
+    <div class="rgs">${gains.join("")}</div>
+    <button class="btn rkBtn2" data-act="rank" ${why ? "disabled" : ""}><span>${why || "승급 의식 거행"}</span></button>
+    ${path}
+  </div>`;
+}
 function viewRank() { const hs = hseg; hseg = "rank"; const rk = homeBody(); hseg = hs; return `${rk}<div class="card row sp" style="margin-top:16px"><span class="mut">저장은 자동 (이 브라우저에만)</span><button class="btn" data-act="reset">초기화</button></div><div class="card row sp"><span>효과음</span><button class="btn ${SFX.on ? "g" : "dk"}" data-act="sfx">${SFX.on ? "켜짐" : "꺼짐"}</button></div>`; }
 function heroList() {
   let h = `<div class="mut" style="margin-bottom:5px">시체 40구(낮은 등급부터 소모, 평균 품질이 능력치에 반영) + 던전 재료 1 + 마력. 각 1마리.</div>`;
@@ -2279,13 +2365,14 @@ function butler() {
     "…전하? 오오, ${S.prince} 전하! 왕실 집사이옵니다. 하필 첫 소환이 이 늙은 뼈다귀라 송구하옵니다. 허리는… 원래 없사오니 걱정 마시옵소서."</div>`, [{ label: "…반갑다" }]);
 }
 // 새 버전 알림: 배포 주소(같은 폴더)의 version.txt가 지금 빌드와 다르면 새로고침 버튼을 띄움
-const BUILD = "20261122183215";
+const BUILD = "20261122195207";
 function checkVersion() {
   if (BUILD.startsWith("__") || location.protocol === "file:") return;
   fetch("version.txt?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(v => {
     v = v.trim(); if (!v || v === BUILD || document.getElementById("newVer")) return;
     const b = document.createElement("button"); b.id = "newVer"; b.textContent = "새 버전이 나왔어요 · 눌러서 새로고침";
-    b.onclick = () => { try { save(); } catch (e) {} location.reload(); }; document.body.appendChild(b);
+    b.onclick = () => { try { save(); } catch (e) {} location.replace(location.pathname + "?v=" + encodeURIComponent(v)); };   // 주소 뒤에 버전을 붙여 브라우저 캐시(옛 파일) 우회
+    document.body.appendChild(b);
   }).catch(() => {});
 }
 setInterval(checkVersion, 60000); setTimeout(checkVersion, 5000);
