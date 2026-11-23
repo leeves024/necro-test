@@ -643,8 +643,8 @@ const ANCHOR = { x: 20, y: 38 };
 /* ================== 데이터 ================== */
 const GRADES = [null,
   { n: "하급", c: "#9a9285", m: 1.0 }, { n: "일반", c: "#d8cfb8", m: 1.35 }, { n: "고급", c: "#7fb35a", m: 1.8 },
-  { n: "희귀", c: "#5a8fc8", m: 2.4 }, { n: "영웅", c: "#a070d0", m: 3.2 }, { n: "전설", c: "#e0a030", m: 4.3 }];
-const WORKER_MOD = [0, -0.2, -0.1, 0, 0.1, 0.25, 0.5];
+  { n: "희귀", c: "#5a8fc8", m: 2.4 }, { n: "초희귀", c: "#3cc0c8", m: 2.8 }, { n: "영웅", c: "#a070d0", m: 3.2 }, { n: "전설", c: "#e0a030", m: 4.3 }];
+const WORKER_MOD = [0, -0.2, -0.1, 0, 0.1, 0.2, 0.25, 0.5];
 // 시체 종류 = 어느 묘역에서 나왔는지. 능력 배율만 다름
 // 같은 등급 안의 세부 단계 (-- ~ ++). 시체의 type 값이 이 단계(-2~2)
 const TYPES = {
@@ -652,15 +652,27 @@ const TYPES = {
   "1": { n: "시체 +", s: "+", m: 1.12 }, "2": { n: "시체 ++", s: "++", m: 1.24 } };
 const OLD_TYPE = { bone: -1, fresh: 0, knight: 1, noble: 1, royal: 2 };
 function rollQ(tier = S.tier) {   // 높은 묘역·도굴 요령일수록 + 쪽이 잘 나옴
-  const x = (Math.random() + Math.random() - 1) * 2.4 + (tier - 3) * 0.35 + 0.04 * ((S.wk && S.wk.skill || 1) - 1);
+  const x = (Math.random() + Math.random() - 1) * 2.4 + (tier - 5) * 0.18 + 0.04 * ((S.wk && S.wk.skill || 1) - 1);
   return clamp(Math.round(x), -2, 2);
 }
-const TIERS = [null,
-  { n: "야산 무연고 묘지", types: [["bone", .7], ["fresh", .3]], hp: 10 },
-  { n: "마을 공동묘지", types: [["fresh", .6], ["bone", .4]], hp: 18 },
-  { n: "기사 묘역", types: [["knight", .6], ["fresh", .4]], hp: 30 },
-  { n: "귀족 납골당", types: [["noble", .6], ["knight", .4]], hp: 50 },
-  { n: "적국 왕가의 능", types: [["royal", .5], ["noble", .5]], hp: 80 }];
+// 클래스 → 묘역: 1~2클래스는 같은 묘역, 이후 클래스마다 새 묘역 (승급하면 자동 이동)
+function clsTier(c) { return c <= 2 ? 1 : Math.min(9, c - 1); }
+const TIERS = [null,   // 묘역 9곳. 등급 상한: 1~3클래스 희귀 · 4~5 초희귀 · 6~7 영웅 · 8~10 전설
+  { n: "야산 무연고 묘지", hp: 10 },
+  { n: "마을 공동묘지", hp: 14 },
+  { n: "옛 전장의 무덤", hp: 18 },
+  { n: "기사 묘역", hp: 24 },
+  { n: "안개 수도원 묘지", hp: 30 },
+  { n: "귀족 납골당", hp: 40 },
+  { n: "왕가의 능", hp: 50 },
+  { n: "성인의 지하묘지", hp: 65 },
+  { n: "모르티아 왕릉", hp: 80 }];
+// 묘역별 등급 확률(%): 하급·일반·고급·희귀·초희귀·영웅·전설
+const TIER_G = [null,
+  [55, 35, 9, 1, 0, 0, 0], [30, 40, 24, 6, 0, 0, 0], [10, 30, 35, 20, 5, 0, 0], [0, 15, 35, 35, 15, 0, 0],
+  [0, 0, 25, 40, 30, 5, 0], [0, 0, 10, 35, 40, 15, 0], [0, 0, 0, 25, 45, 27, 3], [0, 0, 0, 10, 40, 42, 8], [0, 0, 0, 0, 35, 50, 15]];
+function tierMeanM(t) { const w = TIER_G[t]; return w.reduce((a, x, i) => a + x * GRADES[i + 1].m, 0) / w.reduce((a, x) => a + x, 0); }
+function tierTopG(t) { const w = TIER_G[t]; for (let i = 6; i >= 0; i--) if (w[i]) return i + 1; return 1; }
 // 혼백 (클래스 순서). pop = 통솔력 소모. 6~10은 임시 이름/임시 그림
 // 혼백: 근접 소모성 5종(1~5클래스) + 일꾼. pop = 통솔력 소모. (좀비·구울·기사·뱀파이어 그림은 임시 색입힘)
 const SOULS = [
@@ -734,20 +746,17 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => { n = Math.floor(n); if (n < 1e4) return String(n); if (n < 1e8) return (n / 1e4).toFixed(n < 1e5 ? 1 : 0) + "만"; if (n < 1e12) return (n / 1e8).toFixed(n < 1e9 ? 1 : 0) + "억"; if (n < 1e16) return (n / 1e12).toFixed(n < 1e13 ? 1 : 0) + "조"; if (n < 1e20) return (n / 1e16).toFixed(1) + "경"; return n.toExponential(1); };
 const pick = arr => { let r = Math.random(), a = 0; for (const [k, p] of arr) { a += p; if (r < a) return k; } return arr[arr.length - 1][0]; };
 
-function masteryL() { return 8 * (S.cls - 1) + 5 * (S.tier - 1); }   // (숙련도 시스템 삭제) 등급 기준값 = 클래스·묘역
-function maxTier() { return Math.min(5, Math.ceil(S.cls / 2)); }
+function masteryL() { return 8 * (S.cls - 1) + 2.5 * (S.tier - 1); }   // (숙련도 시스템 삭제) 등급 기준값 = 클래스·묘역
+function maxTier() { return clsTier(S.cls); }
 function corpseCap() { return 20 + S.cls * 10 + tv("souljar"); }
 function armyCap() { return 30 + S.cls * 10 + tv("barracks"); }
 function cmdMax() { return CMD[S.cls] + tv("baton"); }
 function soulUnlocked(id) { return S.cls >= SOUL[id].cls; }
 function tapCost() { return Math.round(20 * Math.pow(1.55, S.tapLv - 1)); }
-function tapDmg() { return (1 + 0.6 * (S.cls - 1)) * (1 + 0.5 * (S.tier - 1)); }
+function tapDmg() { return (1 + 0.6 * (S.cls - 1)) * (1 + 0.25 * (S.tier - 1)); }
 // 등급 확률 하향: 숙련도가 올라도 평균은 영웅 근처에서 멈추고, 전설은 영웅이 나올 때 6% 확률로만
 function gradeMean(effL) { return 1 + Math.min(3.3, effL * 0.045); }
-function rollGrade(effL) {
-  const g = clamp(Math.round(gradeMean(effL) + (Math.random() - 0.5) * 1.6 + (Math.random() < 0.04 ? 1 : 0)), 1, 5);
-  return g === 5 && Math.random() < 0.06 ? 6 : g;
-}
+function rollGrade(tier = S.tier) { return pick(TIER_G[tier].map((w, i) => [i + 1, w / 100]).filter(x => x[1])); }
 // 소환수 강화 (죽음 소모). 스켈레톤은 튜토리얼용 한 번짜리, 해골 병사부터 5종 능력치
 const UPG = {   // 1레벨 = 0.0225%씩 아주 잘게(해골 병사 최대 2000레벨), 마력으로. 공격·체력은 1111레벨마다 ×1.3 돌파
   atk: { n: "공격력", per: 0.000225, max: 111111, ms: 1.3, msE: 1111, base: 0.4, g: 1.000674, fmt: v => `+${+(v * 100).toFixed(3)}%` },
@@ -847,7 +856,7 @@ function log(m) {
 }
 function sellPrice(c) { return Math.round(2 * c.grade * TYPES[c.type].m); }   // 마력으로 반환
 function makeCorpse(effL, tier = S.tier) {
-  const grade = rollGrade(effL), type = rollQ(tier);
+  const grade = rollGrade(tier), type = rollQ(tier);
   S.digXp += 1;
   if (S.corpses.length >= corpseCap()) {
     const low = S.corpses.slice().sort((a, b) => a.grade - b.grade || a.type - b.type)[0];
@@ -999,11 +1008,12 @@ function hellRefN(f) { return 18 + 3 * f; }
 function hellRef(f) {
   const id = HELL_REF[f - 1], fr = hellRefFrac(f), so = SOUL[id], c = f + 1;
   const lv = k => Math.round(fr * (UPG[k].ms ? (SOUL_CAP[id] || 450) : UPG[k].max));
-  const g = clamp(Math.round(1 + Math.min(3.3, (8 * (c - 1) + 5 * (Math.min(5, Math.ceil(c / 2)) - 1)) * 0.045)), 1, 5), gm = GRADES[g].m;
+  const gm = HELL_GM[f] || tierMeanM(clsTier(c));
   const atk = so.atk * gm * (1 + upVal(UPG.atk, lv("atk"))), hp = so.hp * gm * (1 + upVal(UPG.hp, lv("hp")));
   const dps = atk * (1 + upVal(UPG.aspd, lv("aspd"))) / so.cd * (1 + upVal(UPG.crit, lv("crit")));
   return { id, frac: fr, lvA: lv("atk"), atk, hp, dps, n: hellRefN(f) };
 }
+const HELL_GM = [0, 1.0, 1.35, 1.35, 1.8, 1.8, 2.4, 2.4, 2.4, 2.4];   // 기준 등급 배율(예전 기준 그대로 — 보스 체력 유지)
 let HELL_K = { hp: 37, slam: 0.04 };   // 시뮬로 맞춘 값: 기준 강화 90%면 항상, 80%면 가끔, 60%면 못 잡음
 function hellBoss(f) { const r = hellRef(f); return { hp: r.dps * r.n * HELL_K.hp, atk: r.hp * HELL_K.slam }; }
 
@@ -1029,7 +1039,7 @@ function resolveHell() {
 }
 // 승급에 필요한 보스 돌파 (1장 = Lv.120): 2→3 Lv.10, 3→4 Lv.20(1챕터 보스), 이후 챕터 보스마다, 8→9 Lv.120(1장 최종), 9→10 2장-Lv.20
 const RANK_BOSS = [0, 0, 10, 20, 50, 60, 70, 80, 90, 100];   // c→c+1에 넘어야 할 보스 레벨: 새 혼백 강화 50%로 깰 수 있는 곳(시뮬)
-function rankReq(c) { return { n: 3 + c, g: Math.min(6, Math.ceil(c / 2)), death: Math.round(60 * Math.pow(2.6, c - 1)), mana: c <= 1 ? 0 : Math.round(500 * Math.pow(3, c - 1)), heart: c <= 1 ? 0 : c - 1, stage: c <= 1 ? 0 : RANK_BOSS[c] + 1 }; }   // 승급: 지옥 보스의 심장 + 죽음 + 마력 + 시체
+function rankReq(c) { return { n: 3 + c, g: Math.ceil(c / 2) >= 5 ? 6 : Math.ceil(c / 2), death: Math.round(60 * Math.pow(2.6, c - 1)), mana: c <= 1 ? 0 : Math.round(500 * Math.pow(3, c - 1)), heart: c <= 1 ? 0 : c - 1, stage: c <= 1 ? 0 : RANK_BOSS[c] + 1 }; }   // 승급: 지옥 보스의 심장 + 죽음 + 마력 + 시체
 function rankCandidates() { const r = rankReq(S.cls); return S.corpses.filter(c => c.grade >= r.g).sort((a, b) => a.grade - b.grade || a.type - b.type).slice(0, r.n); }
 function canRank() {
   if (S.cls >= 10) return "최고 클래스입니다";
@@ -1044,7 +1054,7 @@ function canRank() {
 function doRank() {
   if (canRank()) return false;
   const r = rankReq(S.cls), v = new Set(rankCandidates().map(c => c.id));
-  S.corpses = S.corpses.filter(c => !v.has(c.id)); S.death -= r.death; S.mana -= r.mana; if (r.heart) S.hearts[r.heart]--; S.cls++; ensureStarter(); if (S.cls >= 3) tix().comp++;   // 지하감옥 전까지 임시: 승급마다 동료 뽑기권 1장
+  S.corpses = S.corpses.filter(c => !v.has(c.id)); S.death -= r.death; S.mana -= r.mana; if (r.heart) S.hearts[r.heart]--; S.cls++; S.tier = maxTier(); S.graveHp = TIERS[S.tier].hp; ensureStarter(); if (S.cls >= 3) tix().comp++;   // 지하감옥 전까지 임시: 승급마다 동료 뽑기권 1장
   B.prinHp = princeMaxHp();
   const nu = SOULS.find(s => s.cls === S.cls && s.role !== "worker"), nh = Object.values(HEROES).find(h => h.cls === S.cls);
   log(`승급 의식 성공! ${S.cls}클래스 — 통솔력 ${cmdMax()}${nu ? " · 새 혼백: " + nu.n : ""}${nh ? " · 영웅 해금: " + nh.n : ""}`);
@@ -1457,6 +1467,7 @@ function load() {
       if (f !== 1) { for (const id in S.soulLv) for (const k in UPG) if (S.soulLv[id][k]) S.soulLv[id][k] = Math.round(S.soulLv[id][k] * f); for (const c in S.compLv) for (const u in CUPG) if (S.compLv[c][u]) S.compLv[c][u] = Math.round(S.compLv[c][u] * f); } }
     if ((o.upScale || 0) < 45) { const M = { spd: 1778, aspd: 2222, crit: 1778 }; for (const id in S.soulLv) for (const k in M) if (S.soulLv[id][k]) S.soulLv[id][k] = Math.min(100, Math.round(S.soulLv[id][k] * 100 / M[k])); }   // 이동·공속·치명: 최대 100레벨로
     S.upScale = 45;
+    if (!S.flags.g7) { S.flags.g7 = 1; const up = c => { if (c && c.grade >= 5) c.grade++; }; S.corpses.forEach(up); S.army.forEach(up); S.ritual.forEach(r => up(r.c)); if (S.worker && !S.worker.butler) up(S.worker); if (S.hell && S.hell.party) S.hell.party.forEach(up); S.tier = maxTier(); S.graveHp = TIERS[S.tier].hp; }   // 초희귀 등급 추가 → 영웅·전설 번호 +1, 묘역은 클래스 묘역으로
     // 상한 도입 전 세이브: 상한을 넘은 강화 레벨은 상한으로 낮추고, 넘친 만큼 쓴 마력은 돌려줌
     let refund = 0;
     for (const id in S.soulLv) if (SOUL[id] && id !== "skeleton") for (const k in UPG) { const mx = upMax(id, k), l = S.soulLv[id]; while ((l[k] || 0) > mx) { l[k]--; refund += upCost(id, k, l[k]); } }
@@ -1663,17 +1674,75 @@ function drawBattleBg(g, r, t) {
   g.strokeStyle = "#7a55a8"; g.lineWidth = 1; g.beginPath(); g.ellipse(px, py + 3, 26, 9, 0, 0, 7); g.stroke(); g.strokeStyle = "#5a3f7a"; g.beginPath(); g.ellipse(px, py + 3, 17, 6, 0, 0, 7); g.stroke();
 }
 
+let digTheme = 1;
+// 묘역 9곳 배경 (도굴 화면). 픽셀 실루엣 + 명암
+const DIGBG = [null,
+  { sky: ["#1b1722", "#4a3a46"], moon: "#e8dcc0", hill: ["#2e2734", "#251f2b"], gr: ["#3a3029", "#4d3f30", "#2a221c"] },
+  { sky: ["#10162a", "#34405a"], moon: "#dfe6f2", hill: ["#222a3c", "#1a2030"], gr: ["#33362f", "#43463a", "#25271f"] },
+  { sky: ["#1e1014", "#8a3a22"], sun: "#ff7a30", hill: ["#3a2224", "#2a1a1c"], gr: ["#3a2c24", "#4a3828", "#281e18"] },
+  { sky: ["#0c1418", "#2c4448"], moon: "#cfe2e0", hill: ["#18262a", "#121c20"], gr: ["#283230", "#36423c", "#1c2422"] },
+  { sky: ["#0e1612", "#3a4a3e"], moon: "#d6e4d0", hill: ["#1c2a22", "#16211b"], gr: ["#29332a", "#364235", "#1d251e"], fog: "#9ab4a0" },
+  { sky: ["#140e22", "#5a3a6a"], moon: "#efdcf4", hill: ["#2a2036", "#21192c"], gr: ["#2e2830", "#3c343e", "#201b22"] },
+  { sky: ["#1e140e", "#b0803a"], sun: "#ffd070", hill: ["#3a2c1e", "#2e2418"], gr: ["#4a3e2c", "#5a4c36", "#322a1e"] },
+  { cave: true, wall: ["#1a1614", "#2a2420", "#100d0c"], gr: ["#2c2622", "#3a322c", "#1c1816"] },
+  { sky: ["#0c0614", "#3a1a52"], moon: "#c8a0ff", hill: ["#22163a", "#1a1030"], gr: ["#261e2e", "#342840", "#1a1420"], rune: "#a070ff" }];
+function drawDigBg(g, r, t) {
+  const D = DIGBG[t] || DIGBG[1], gy = groundY();
+  const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
+  const tri = (x, y, w, h, c) => { for (let i = 0; i < h; i++) { const ww = w * (i + 1) / h; R(x + (w - ww) / 2, y + i, ww, 1, c); } };
+  const k = Math.max(1, H / 130), K0 = k;   // 소품 크기 배율
+  if (D.cave) {   // 지하묘지: 돌벽 · 아치 · 해골 벽감 · 촛불
+    R(0, 0, W, gy, D.wall[0]);
+    for (let y = 0; y < gy; y += 6 * k) for (let x = ((y / (6 * k)) % 2) * 6 * k; x < W; x += 12 * k) { R(x, y, 11 * k, 5 * k, r() < .5 ? D.wall[1] : D.wall[0]); }
+    const aw = 46 * k, n = Math.ceil(W / (aw + 14 * k)) + 1;
+    for (let i = 0; i < n; i++) {
+      const x = i * (aw + 14 * k) - 10 * k, top = gy - 80 * k;
+      R(x, top + 20 * k, aw, gy - top - 20 * k, D.wall[2]);
+      for (let a = 0; a <= 20; a++) { const ang = Math.PI * a / 20, cx = x + aw / 2 + Math.cos(ang) * aw / 2, cy = top + 20 * k - Math.sin(ang) * 20 * k; R(cx - 2 * k, cy - 2 * k, 4 * k, 4 * k, "#4a403a"); R(cx - 1, cy + 2 * k, 2 * k, 2 * k, D.wall[2]); }
+      for (let row = 0; row < 3; row++) for (let c = 0; c < 3; c++) { const sx = x + 8 * k + c * 12 * k, sy = top + 26 * k + row * 13 * k; R(sx, sy, 8 * k, 7 * k, "#cfc4ae"); R(sx + 1.5 * k, sy + 2 * k, 2 * k, 2 * k, "#140f0c"); R(sx + 4.5 * k, sy + 2 * k, 2 * k, 2 * k, "#140f0c"); R(sx + 2 * k, sy + 5.5 * k, 4 * k, 1.5 * k, "#8a806e"); }
+    }
+    for (let i = 0; i < 7; i++) { const x = r() * W, y = gy - 4 * k; R(x, y - 8 * k, 3 * k, 8 * k, "#e8e0c8"); R(x + .5 * k, y - 12 * k, 2 * k, 4 * k, "#ffcf60"); const gl = g.createRadialGradient(x + k, y - 11 * k, 1, x + k, y - 11 * k, 22 * k); gl.addColorStop(0, "rgba(255,190,90,.35)"); gl.addColorStop(1, "rgba(255,190,90,0)"); g.fillStyle = gl; g.fillRect(x - 22 * k, y - 33 * k, 44 * k, 44 * k); }
+  } else {
+    const sky = g.createLinearGradient(0, 0, 0, gy); sky.addColorStop(0, D.sky[0]); sky.addColorStop(1, D.sky[1]); g.fillStyle = sky; g.fillRect(0, 0, W, gy);
+    for (let i = 0; i < 60; i++) R(r() * W, r() * gy * .5, 1, 1, `rgba(255,255,255,${(.1 + r() * .35).toFixed(2)})`);
+    const orb = D.moon || D.sun, ox = W * (.68 + r() * .2), oy = gy * .2, or = (D.moon ? 9 : 13) * k;
+    const gl = g.createRadialGradient(ox, oy, 2, ox, oy, or * 5); gl.addColorStop(0, orb + "77"); gl.addColorStop(1, orb + "00"); g.fillStyle = gl; g.fillRect(ox - or * 5, oy - or * 5, or * 10, or * 10);
+    g.fillStyle = orb; g.beginPath(); g.arc(ox, oy, or, 0, 7); g.fill(); if (D.moon) { g.fillStyle = D.sky[0] + "cc"; g.beginPath(); g.arc(ox + or * .45, oy - or * .25, or * .85, 0, 7); g.fill(); }
+    let y = gy - 60 * k; for (let x = 0; x < W; x++) { y = clamp(y + (r() - .5) * 3 * k, gy - 90 * k, gy - 40 * k); R(x, y, 1, gy - y, D.hill[0]); }
+    y = gy - 30 * k; for (let x = 0; x < W; x++) { y = clamp(y + (r() - .5) * 2.2 * k, gy - 46 * k, gy - 18 * k); R(x, y, 1, gy - y, D.hill[1]); }
+  }
+  const B = gy - 2;   // 소품 바닥선
+  const tree = (x, h) => { R(x, B - h, 3 * k, h, "#1a1418"); for (let i = 0; i < 5; i++) { const by = B - h + r() * h * .6, d = r() < .5 ? -1 : 1, l = (6 + r() * 10) * k; for (let j = 0; j < l; j++) R(x + d * j, by - j * .5, k, k, "#1a1418"); } };
+  const cross = (x, h, c) => { R(x, B - h, 2 * k, h, c); R(x - 3 * k, B - h * .75, 8 * k, 2 * k, c); };
+  const stone = (x, w, h, c) => { R(x, B - h + w / 2, w, h - w / 2, c); g.fillStyle = c; g.beginPath(); g.arc(x + w / 2, B - h + w / 2, w / 2, Math.PI, 0); g.fill(); R(x + w * .65, B - h + w / 2, w * .35, h - w / 2, "rgba(0,0,0,.25)"); };
+  const mound = (x, w, c) => { g.fillStyle = c; g.beginPath(); g.ellipse(x, B + 1, w / 2, w / 5, 0, Math.PI, 0); g.fill(); };
+  const cyp = (x, h) => { for (let i = 0; i < h; i++) { const ww = Math.max(1, Math.sin(Math.PI * i / h) * 6 * k + k); R(x - ww / 2, B - i, ww, 1, i % 3 ? "#121c1a" : "#16221f"); } };
+  const pillarHouse = (x, w, h, c, roof) => { R(x, B - h, w, h, c); R(x + w * .7, B - h, w * .3, h, "rgba(0,0,0,.25)"); tri(x - 3 * k, B - h - 10 * k, w + 6 * k, 10 * k, roof); for (let i = 0; i < 4; i++) R(x + 2 * k + i * (w - 6 * k) / 3, B - h + 4 * k, 2 * k, h - 6 * k, "rgba(255,255,255,.12)"); R(x + w / 2 - 4 * k, B - 14 * k, 8 * k, 14 * k, "#0c0a10"); };
+  const fence = (c) => { R(0, B - 9 * k, W, k, c); for (let x = 0; x < W; x += 6 * k) { R(x, B - 13 * k, k, 13 * k, c); R(x - k * .5, B - 14 * k, 2 * k, k, c); } };
+  const ar = (fn, n) => { for (let i = 0; i < n; i++) fn(i, (i + .2 + r() * .6) * W / n); };
+  if (t === 1) { tree(W * .1, 60 * k); tree(W * .88, 50 * k); ar((i, x) => { if (r() < .5) cross(x, (14 + r() * 8) * k, "#4a3a2c"); else mound(x, 26 * k, "#2e241c"); }, 9); }
+  else if (t === 2) { const cx = W * .18; R(cx, B - 46 * k, 30 * k, 46 * k, "#2a2c38"); tri(cx - 3 * k, B - 66 * k, 36 * k, 20 * k, "#1c1e28"); R(cx + 12 * k, B - 82 * k, 6 * k, 18 * k, "#2a2c38"); R(cx + 14 * k, B - 88 * k, 2 * k, 6 * k, "#2a2c38"); R(cx + 11 * k, B - 85 * k, 8 * k, 2 * k, "#2a2c38"); R(cx + 12 * k, B - 34 * k, 6 * k, 9 * k, "#ffd27a"); fence("#3c3a36"); ar((i, x) => stone(x, (7 + r() * 3) * k, (12 + r() * 6) * k, r() < .5 ? "#6e6c68" : "#5c5a56"), 10); }
+  else if (t === 3) { ar((i, x) => { mound(x, 30 * k, "#2a1e18"); const n = 1 + Math.floor(r() * 3); for (let j = 0; j < n; j++) { const sx = x + (j - 1) * 5 * k, h = (16 + r() * 14) * k, lean = (r() - .5) * .6; for (let q = 0; q < h; q++) R(sx + lean * q, B - q, k, 1, "#6a6058"); } if (r() < .4) { R(x, B - 40 * k, k, 40 * k, "#3a2e24"); R(x + k, B - 40 * k, 12 * k, 8 * k, "#7a2420"); R(x + 5 * k, B - 32 * k, 8 * k, 3 * k, "#7a2420"); } }, 7); for (let i = 0; i < 5; i++) { const x = r() * W, y = r() * gy * .4; R(x, y, 4 * k, k, "#100808"); R(x + k, y - k, 2 * k, k, "#100808"); } }
+  else if (t === 4) { ar((i, x) => { if (i % 3 === 1) { cyp(x, 70 * k); return; } R(x - 7 * k, B - 8 * k, 14 * k, 8 * k, "#4a5656"); R(x - 3 * k, B - 34 * k, 6 * k, 26 * k, "#5a6666"); R(x - 4 * k, B - 40 * k, 8 * k, 7 * k, "#5a6666"); R(x + 3 * k, B - 44 * k, k, 30 * k, "#7a8686"); R(x - 8 * k, B - 28 * k, 6 * k, 9 * k, "#46524f"); }, 6); ar((i, x) => { R(x, B - 12 * k, 8 * k, 8 * k, "#5e6a68"); tri(x, B - 4 * k, 8 * k, 4 * k, "#5e6a68"); }, 7); }
+  else if (t === 5) { const mx = W * .74; R(mx, B - 50 * k, 44 * k, 50 * k, "#26302a"); tri(mx - 3 * k, B - 66 * k, 50 * k, 16 * k, "#1a221d"); R(mx + 4 * k, B - 96 * k, 14 * k, 46 * k, "#2a342e"); tri(mx + 2 * k, B - 112 * k, 18 * k, 16 * k, "#1a221d"); R(mx + 8 * k, B - 88 * k, 6 * k, 8 * k, "#d8c878"); for (let i = 0; i < 3; i++) R(mx + 22 * k + i * 7 * k, B - 36 * k, 3 * k, 7 * k, "#c8b868");
+    ar((i, x) => { if (x > W * .7) return; R(x, B - 26 * k, 3 * k, 26 * k, "#6a746c"); R(x - 5 * k, B - 20 * k, 13 * k, 3 * k, "#6a746c"); g.strokeStyle = "#6a746c"; g.lineWidth = 1.5 * k; g.beginPath(); g.arc(x + 1.5 * k, B - 18.5 * k, 5 * k, 0, 7); g.stroke(); }, 6); }
+  else if (t === 6) { ar((i, x) => { const w = (30 + r() * 10) * k; pillarHouse(x - w / 2, w, (30 + r() * 12) * k, i % 2 ? "#4a4250" : "#3e3846", "#2a2430"); if (r() < .5) { g.fillStyle = "#3a3242"; g.beginPath(); g.arc(x, B - 52 * k, 9 * k, Math.PI, 0); g.fill(); } }, 4); fence("#1a161e"); }
+  else if (t === 7) { ar((i, x) => { if (i % 2) { const w = (70 + r() * 30) * k; g.fillStyle = "#3e3222"; g.beginPath(); g.ellipse(x, B + 2, w / 2, 34 * k, 0, Math.PI, 0); g.fill(); g.fillStyle = "rgba(255,210,120,.12)"; g.beginPath(); g.ellipse(x - w * .12, B - 8 * k, w / 3, 20 * k, 0, Math.PI, 0); g.fill(); } else { R(x - 4 * k, B - 60 * k, 8 * k, 60 * k, "#5a4a32"); tri(x - 4 * k, B - 68 * k, 8 * k, 8 * k, "#6a5838"); R(x - 2 * k, B - 56 * k, 2 * k, 50 * k, "rgba(0,0,0,.2)"); } }, 5); for (let i = 0; i < 3; i++) { const x = W * (.2 + i * .3); R(x - 3 * k, B - 14 * k, 6 * k, 14 * k, "#3a2e20"); R(x - 4 * k, B - 16 * k, 8 * k, 3 * k, "#4a3a28"); R(x - 2 * k, B - 22 * k, 4 * k, 6 * k, "#ff9a30"); R(x - k, B - 25 * k, 2 * k, 3 * k, "#ffe080"); } }
+  else if (t === 9) { const k = K0 * .62, sx = W * .5; R(sx - 14 * k, B - 24 * k, 28 * k, 24 * k, "#2a2236"); R(sx - 9 * k, B - 84 * k, 18 * k, 60 * k, "#342a44"); tri(sx - 14 * k, B - 84 * k, 28 * k, 40 * k, "#2c2340"); R(sx - 6 * k, B - 100 * k, 12 * k, 14 * k, "#3a3050"); R(sx - 4 * k, B - 96 * k, 2 * k, 2 * k, D.rune); R(sx + 2 * k, B - 96 * k, 2 * k, 2 * k, D.rune); for (let j = -1; j <= 1; j++) tri(sx + j * 5 * k - 2 * k, B - 108 * k, 4 * k, 8 * k, "#e0b050"); R(sx + 12 * k, B - 110 * k, 2 * k, 90 * k, "#4a4058"); g.fillStyle = D.rune; g.beginPath(); g.arc(sx + 13 * k, B - 112 * k, 4 * k, 0, 7); g.fill();
+    ar((i, x) => { if (Math.abs(x - sx) < 30 * k) return; const h = (20 + r() * 40) * k; R(x - 4 * k, B - h, 8 * k, h, "#3a3048"); R(x - 5 * k, B - h, 10 * k, 3 * k, "#4a4058"); R(x + 2 * k, B - h + 3 * k, 2 * k, h - 3 * k, "rgba(0,0,0,.25)"); }, 7);
+    const rg = g.createRadialGradient(sx, B, 4, sx, B, 90 * k); rg.addColorStop(0, D.rune + "55"); rg.addColorStop(1, D.rune + "00"); g.fillStyle = rg; g.fillRect(sx - 90 * k, B - 90 * k, 180 * k, 100 * k); }
+  else if (t === 8) { ar((i, x) => mound(x, 22 * k, "#1e1a16"), 5); }
+  // 땅
+  R(0, gy - 4, W, H, D.gr[0]); R(0, gy - 4, W, 2, D.gr[1]);
+  for (let i = 0; i < 300; i++) R(r() * W, gy - 3 + r() * (H - gy + 3), 1 + Math.floor(r() * 2), 1, r() < .5 ? D.gr[1] : D.gr[2]);
+  if (D.fog) for (let i = 0; i < 4; i++) { const fy = gy - (10 + i * 14) * k; const fg = g.createLinearGradient(0, fy - 8 * k, 0, fy + 8 * k); fg.addColorStop(0, D.fog + "00"); fg.addColorStop(.5, D.fog + "33"); fg.addColorStop(1, D.fog + "00"); g.fillStyle = fg; g.fillRect(0, fy - 8 * k, W, 16 * k); }
+  if (D.rune) for (let i = 0; i < 14; i++) R(r() * W, gy - 2 + r() * (H - gy), k, k, D.rune);
+}
 function makeBg(kind) {
   const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d");
   let seed = kind === "b" ? 5 : 11; const r = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
   if (kind === "b") { drawBattleBg(g, r, bgTheme); return c; }
-  const gy = groundY(), sky = g.createLinearGradient(0, 0, 0, gy);
-  sky.addColorStop(0, "#26252b"); sky.addColorStop(1, "#4a4236"); g.fillStyle = sky; g.fillRect(0, 0, W, gy);
-  g.fillStyle = "#35322f"; for (let x = 0; x < W; x += 6) { const h = 14 + Math.floor(r() * 20); g.fillRect(x, gy - 30 - h, 6, h + 30); }
-  g.fillStyle = "#2d2a27"; for (let x = 0; x < W; x += 4) { const h = 6 + Math.floor(r() * 10); g.fillRect(x, gy - 16 - h, 4, h + 16); }
-  g.fillStyle = "#4a4a4a"; for (let i = 0; i < 8; i++) { const x = 8 + i * 30 + Math.floor(r() * 8); g.fillRect(x, gy - 13, 5, 10); g.fillRect(x + 1, gy - 14, 3, 1); }
-  g.fillStyle = "#3c3125"; g.fillRect(0, gy - 4, W, H);
-  for (let i = 0; i < 260; i++) { g.fillStyle = r() < .5 ? "#5a4a32" : "#2f271b"; g.fillRect(Math.floor(r() * W), gy - 3 + Math.floor(r() * (H - gy + 3)), 1 + Math.floor(r() * 2), 1); }
+  drawDigBg(g, r, digTheme = (typeof S !== "undefined" && S && S.tier) || 1);
   return c;
 }
 function resize() {
@@ -1719,6 +1788,7 @@ function draw(dt) {
     for (const p of B.pr) { ctx.fillStyle = p.c; const z = p.big ? 5 : p.aoe ? 3 : 2; ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y), z, z); }
     for (const p of B.epr) { ctx.fillStyle = "#f0d070"; ctx.fillRect(Math.round(p.x) - 1, Math.round(p.y) - 1, 3, 3); ctx.fillStyle = "#fff4c0"; ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1); }
   } else {
+    if (digTheme !== S.tier) bgD = makeBg("d");
     const gy = groundY(); ctx.drawImage(bgD, 0, 0);
     const gx = graveX(), K = 3;
     drawSpr("grave", gx, gy + 1, { scale: K });
@@ -1789,7 +1859,7 @@ function liveMain() {
     const bossUI = !isBoss(S.stage) || B.waveCd > 0 ? cryUI : B.boss ? `<b style="color:#ffb84d">보스전 ${Math.ceil(B.bossT)}초</b>` : `<button class="btn" data-act="boss" style="padding:3px 8px">보스 도전</button>`;
     setHTML("banner", `<span class="name">${si.act}장-Lv.${si.lvA} <span class="sub">· ${si.name}${isBoss(S.stage) ? (B.boss ? "" : " · 반복") : ""}</span></span>${bossUI}<span class="segs">${Array.from({ length: LV_PER_CH }, (_, i) => `<i class="${i === 9 || i === 19 ? "boss" : ""} ${i < pos ? "on" : ""}"></i>`).join("")}</span>`);
   } else if (!B.inst) {
-    setHTML("banner", `<span class="name">${TIERS[S.tier].n}</span><span class="mut" style="font-size:11px">평균 ${GRADES[clamp(Math.round(gradeMean(masteryL())), 1, 5)].n} 시체 · 묘역 ${S.tier}/${maxTier()}</span><span class="digHint">도굴 중에는 전투가 일시정지됩니다</span>`);
+    setHTML("banner", `<span class="name">${TIERS[S.tier].n}</span><span class="mut" style="font-size:11px">최고 ${GRADES[tierTopG(S.tier)].n} · 묘역 ${S.tier}/${maxTier()}</span><span class="digHint">도굴 중에는 전투가 일시정지됩니다</span>`);
   }
   $("action").classList.toggle("dig", !battle);
   setHTML("tierNav", battle ? "" : `<button class="navb" data-act="tier" data-v="${S.tier - 1}" ${S.tier <= 1 ? "disabled" : ""}>◀</button><button class="navb" data-act="tier" data-v="${S.tier + 1}" ${S.tier >= maxTier() ? "disabled" : ""}>▶</button>`);
@@ -1801,6 +1871,7 @@ function liveMain() {
 function homeTabs() {
   $("hseg").className = "seg";
   if (S.mode === "battle") {
+    $("hseg").className = "seg s2";
     if (!["train", "army"].includes(hseg)) hseg = "army";
     return [["train", "마법 수련"], ["army", "병력"]].map(([k, n]) => `<button class="${hseg === k ? "on" : ""}" data-act="hseg" data-v="${k}">${n}</button>`).join("");
   }
@@ -1928,7 +1999,7 @@ function viewArmy() {
     if (r.soul) return `<div class="orb run" style="${pos};--g:${GRADES[r.c.grade].c}"><div class="orbPg" data-ritc="${i}" style="--p:${Math.round(r.t / r.dur * 100)}%;--g:${GRADES[r.c.grade].c}"></div>${icon(SOUL[r.soul].spr)}</div>`;
     return `<button class="orb full" data-act="unstage" data-v="${i}" style="${pos};--g:${GRADES[r.c.grade].c}">${icon("u_skeleton")}</button>`;   // 올린 시체: 등급 색 테두리 + 초상화만
   }).join("");
-  const mid = run.length ? `${icon(SOUL[run[0].soul].spr)}<div class="cSub"><b>${SOUL[run[0].soul].n}</b> 소환 중</div>`
+  const mid = run.length ? `${icon(SOUL[run[0].soul].spr)}<div class="cSub"><b>${SOUL[run[0].soul].n}</b> 소환 중${SOUL[S.soulSel] && S.soulSel !== run[run.length - 1].soul ? `<br>다음 ${SOUL[S.soulSel].n}` : ""}</div>`
     : `${icon(SOUL[S.soulSel] ? SOUL[S.soulSel].spr : "u_skeleton")}<div class="cSub"><b>${SOUL[S.soulSel] ? SOUL[S.soulSel].n : "스켈레톤"}</b>${w.length ? `<br>${w.length}구 · 눌러서 주입` : ""}</div>`;
   const ph = -((typeof performance !== "undefined" ? performance.now() : 0) / 1000);   // 다시 그려도 회전이 이어지도록 위상 고정
   let h = `<div class="card summon3"><div class="sumHead"><h4>소환진</h4><div class="sumChips">${w.length ? `<span class="sc mana">마력 ${p.cost}</span>` : ""}<span class="sc">군단 ${S.army.length}/${armyCap()}</span></div></div>
@@ -1949,7 +2020,7 @@ function viewArmy() {
     if (!S.army.length) h += `<div class="card mut">군단이 비었어요. 의식진에서 혼백을 주입하세요.</div>`;
     for (const s of COMBAT) {
       const g = groups[s.id]; if (!g) continue;
-      const by = [1, 2, 3, 4, 5, 6].map(k => [k, g.filter(u => u.grade === k).length]).filter(x => x[1]);
+      const by = [1, 2, 3, 4, 5, 6, 7].map(k => [k, g.filter(u => u.grade === k).length]).filter(x => x[1]);
       h += `<div class="lrow">${icon(s.spr)}<div class="info"><b>${s.n} ×${g.length}</b><div class="mut">통솔 ${s.pop} · ${by.map(([k, n]) => `${GRADES[k].n} ${n}`).join(" · ")}</div></div></div>`;
     }
     h += `<div class="mut" style="margin-top:4px">소환된 언데드는 전투에서 쓰러지면 사라져요 (소모성).</div>`;
@@ -2383,8 +2454,8 @@ function onAct(el) {
       go();
     } break;
     case "extract": {
-      const opts = [1, 2, 3, 4, 5].map(g => { const cs = S.corpses.filter(c => c.grade <= g); return { g, n: cs.length, m: cs.reduce((a, c) => a + sellPrice(c), 0) }; }).filter(o => o.n);
-      const legend = S.corpses.filter(c => c.grade >= 6).length, staged = waiting().length;
+      const opts = [1, 2, 3, 4, 5, 6].map(g => { const cs = S.corpses.filter(c => c.grade <= g); return { g, n: cs.length, m: cs.reduce((a, c) => a + sellPrice(c), 0) }; }).filter(o => o.n);
+      const legend = S.corpses.filter(c => c.grade >= 7).length, staged = waiting().length;
       const note = `<div class="mut" style="margin-top:4px">보관소 ${S.corpses.length}구${legend ? ` · 전설 ${legend}구는 분해 안 함` : ""}${staged ? ` · 의식진에 올린 ${staged}구는 제외 (빈칸으로 내리면 분해 가능)` : ""}</div>`;
       if (!opts.length) { modal(`<h3>마력 추출</h3><div>분해할 시체가 없어요.</div>${note}`, [{ label: "확인", cls: "dk" }]); return; }
       modal(`<h3>마력 추출</h3><div class="mut">선택한 등급 이하의 시체를 모두 분해해 마력으로 바꿉니다.</div>${note}`,
@@ -2407,7 +2478,9 @@ function onAct(el) {
       }).join("");
       modal(`<h3>어떤 혼백을 부를까요?</h3><div class="mut">${w.length ? `대기열의 시체 ${w.length}구에 혼백을 주입해요.` : "대기열이 비어 있어요. 시체를 먼저 올려주세요."}</div><div class="pcs">${cards}</div>`, [{ label: "닫기", cls: "dk" }]);
       document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => {
-        S.soulSel = b.dataset.pick; const why = canRitual();
+        S.soulSel = b.dataset.pick;
+        if (!waiting().length) { $("modalRoot").innerHTML = ""; log(`이제부터 올리는 시체는 ${SOUL[S.soulSel].n}(으)로 소환해요`); lastSig = ""; render(true); return; }   // 자동 의식 중에도 바로 바뀜 (진행 중인 건 그대로)
+        const why = canRitual();
         if (why) { log(why); const m = document.querySelector(".modal .mut"); if (m) m.textContent = why; sfx("fail"); return; }
         startRitual(); $("modalRoot").innerHTML = ""; lastSig = ""; render(true);
       });
@@ -2603,7 +2676,7 @@ function butler() {
     "…전하? 오오, ${S.prince} 전하! 왕실 집사이옵니다. 하필 첫 소환이 이 늙은 뼈다귀라 송구하옵니다. 허리는… 원래 없사오니 걱정 마시옵소서."</div>`, [{ label: "…반갑다" }]);
 }
 // 새 버전 알림: 배포 주소(같은 폴더)의 version.txt가 지금 빌드와 다르면 새로고침 버튼을 띄움
-const BUILD = "20261123160727";
+const BUILD = "20261123163200";
 function checkVersion() {
   if (BUILD.startsWith("__") || location.protocol === "file:") return;
   fetch("version.txt?t=" + Date.now(), { cache: "no-store" }).then(r => r.ok ? r.text() : "").then(v => {
